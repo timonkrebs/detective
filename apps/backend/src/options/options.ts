@@ -6,6 +6,7 @@ export type Options = {
   demoMode: boolean;
   open: boolean;
   trendAnalysis: boolean;
+  stdio: boolean;
 };
 
 export const defaultOptions: Options = {
@@ -16,4 +17,5 @@ export const defaultOptions: Options = {
   demoMode: false,
   open: true,
   trendAnalysis: false,
+  stdio: false,
 };

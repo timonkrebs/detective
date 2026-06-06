@@ -3,12 +3,15 @@
 import * as os from 'os';
 import * as path from 'path';
 
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+
 import { setupExpress } from './express';
 import { updateTrendAnalysisStatus } from './express';
 import { ensureConfig } from './infrastructure/config';
 import { getEntryGlobs, inferDeps } from './infrastructure/deps';
 import { isRepo, findGitRoot } from './infrastructure/git';
 import { DETECTIVE_VERSION } from './infrastructure/version';
+import { createMcpServer } from './mcp/server';
 import { parseOptions } from './options/parse-options';
 import {
   runTrendAnalysis,
@@ -17,6 +20,13 @@ import {
 import { openSync } from './utils/open';
 
 const options = parseOptions(process.argv.slice(2));
+
+if (options.stdio) {
+  // In STDIO MCP mode, stdout is reserved for the JSON-RPC protocol.
+  // Route all diagnostic logging to stderr so it cannot corrupt the stream.
+  console.log = (...args: unknown[]) => console.error(...args);
+  console.info = (...args: unknown[]) => console.error(...args);
+}
 
 let originalUserPath = process.cwd();
 
@@ -92,36 +102,47 @@ if (!isRepo(originalUserPath)) {
   console.warn('Most diagrams provided by detective do not work without git!');
 }
 
-const app = setupExpress(options);
+if (options.stdio) {
+  // STDIO transport: a single long-lived MCP server over stdin/stdout.
+  // No HTTP server, no browser. The process stays alive while stdin is open.
+  const server = createMcpServer(options);
+  const transport = new StdioServerTransport();
+  server.connect(transport).catch((error) => {
+    console.error('Failed to start MCP stdio server:', error);
+    process.exit(1);
+  });
+} else {
+  const app = setupExpress(options);
 
-app.listen(options.port, () => {
-  const url = `http://localhost:${options.port}`;
-  console.log(`Detective v${DETECTIVE_VERSION} runs at ${url}`);
+  app.listen(options.port, () => {
+    const url = `http://localhost:${options.port}`;
+    console.log(`Detective v${DETECTIVE_VERSION} runs at ${url}`);
 
-  if (options.trendAnalysis) {
-    console.log('Starting trend analysis in background...');
-    // Run trend analysis asynchronously without blocking startup
-    setImmediate(async () => {
-      try {
-        updateTrendAnalysisStatus({ isRunning: true });
-        const result = await runTrendAnalysis(options, { maxCommits: 5 });
-        console.log(
-          `Background trend analysis complete: analyzed ${result.commitsAnalyzed} commits and ${result.filesAnalyzed} files in ${result.totalProcessingTimeMs}ms`
-        );
-        const formattedResult = await formatTrendAnalysisForAPI(result);
-        updateTrendAnalysisStatus({
-          isRunning: false,
-          lastRun: new Date(),
-          lastResult: formattedResult,
-        });
-      } catch (error) {
-        console.error('Background trend analysis failed:', error);
-        updateTrendAnalysisStatus({ isRunning: false });
-      }
-    });
-  }
+    if (options.trendAnalysis) {
+      console.log('Starting trend analysis in background...');
+      // Run trend analysis asynchronously without blocking startup
+      setImmediate(async () => {
+        try {
+          updateTrendAnalysisStatus({ isRunning: true });
+          const result = await runTrendAnalysis(options, { maxCommits: 5 });
+          console.log(
+            `Background trend analysis complete: analyzed ${result.commitsAnalyzed} commits and ${result.filesAnalyzed} files in ${result.totalProcessingTimeMs}ms`
+          );
+          const formattedResult = await formatTrendAnalysisForAPI(result);
+          updateTrendAnalysisStatus({
+            isRunning: false,
+            lastRun: new Date(),
+            lastResult: formattedResult,
+          });
+        } catch (error) {
+          console.error('Background trend analysis failed:', error);
+          updateTrendAnalysisStatus({ isRunning: false });
+        }
+      });
+    }
 
-  if (options.open) {
-    openSync(url);
-  }
-});
+    if (options.open) {
+      openSync(url);
+    }
+  });
+}

@@ -18,6 +18,8 @@ export function parseOptions(args: string[]): Options {
         parsed.demoMode = true;
       } else if (arg === '--trend-analysis') {
         parsed.trendAnalysis = true;
+      } else if (arg === '--mcp') {
+        parsed.stdio = true;
       } else if (!parsed.sheriffDump) {
         parsed.sheriffDump = arg;
       }
