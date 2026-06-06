@@ -13,6 +13,7 @@ import { isRepo, findGitRoot } from './infrastructure/git';
 import { DETECTIVE_VERSION } from './infrastructure/version';
 import { createMcpServer } from './mcp/server';
 import { parseOptions } from './options/parse-options';
+import { isStale, updateLogCache } from './services/log-cache';
 import {
   runTrendAnalysis,
   formatTrendAnalysisForAPI,
@@ -118,6 +119,13 @@ if (options.stdio) {
     const url = `http://localhost:${options.port}`;
     console.log(`Detective v${DETECTIVE_VERSION} runs at ${url}`);
 
+    if (options.fillCache) {
+      // Pre-fill the caches that would otherwise be populated lazily on the
+      // first request, so the UI is fast right away. Runs in the background so
+      // it does not delay startup.
+      setImmediate(() => fillCaches());
+    }
+
     if (options.trendAnalysis) {
       console.log('Starting trend analysis in background...');
       // Run trend analysis asynchronously without blocking startup
@@ -145,4 +153,25 @@ if (options.stdio) {
       openSync(url);
     }
   });
+}
+
+async function fillCaches(): Promise<void> {
+  try {
+    if (isStale()) {
+      console.log('Filling git log cache ...');
+      await updateLogCache();
+    } else {
+      console.log('Git log cache is up to date.');
+    }
+
+    console.log('Filling trend analysis cache ...');
+    const result = await runTrendAnalysis(options);
+    console.log(
+      `Trend analysis cache filled: analyzed ${result.commitsAnalyzed} commits and ${result.filesAnalyzed} files in ${result.totalProcessingTimeMs}ms`
+    );
+
+    console.log('Done filling caches.');
+  } catch (error) {
+    console.error('Failed to fill caches:', error);
+  }
 }

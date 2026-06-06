@@ -53,34 +53,6 @@ npm i @softarc/detective -D
 npx detective
 ```
 
-## MCP Server (AI Assistants)
-
-Detective ships with a built-in [Model Context Protocol](https://modelcontextprotocol.io/) server, so LLMs and AI assistants can run the same analyses (coupling, change coupling, hotspots, team alignment, trends, X-Ray) and reason about your architecture - e.g. to evaluate your domain boundaries.
-
-There are two ways to use it:
-
-- **HTTP**: whenever Detective runs normally, the MCP server is available at `http://localhost:3334/mcp`.
-- **STDIO**: start Detective with the `--mcp` flag to expose the MCP server over stdin/stdout (no web UI, no browser). This is the mode to use for clients like Claude Desktop:
-
-```shell
-npx detective --mcp --path /path/to/repo/to/analyze
-```
-
-Example Claude Desktop configuration:
-
-```json
-{
-  "mcpServers": {
-    "detective": {
-      "command": "npx",
-      "args": ["@softarc/detective", "--mcp", "--path", "/path/to/repo/to/analyze"]
-    }
-  }
-}
-```
-
-See [`apps/backend/src/mcp/README.md`](./apps/backend/src/mcp/README.md) for the full list of tools and details.
-
 ## Defining aliases
 
 In case users have used multiple names, as appearing in the `git log`, use the `aliases` option in the file `.detective/config.json` created the first time detective runs:

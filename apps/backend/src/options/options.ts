@@ -7,6 +7,7 @@ export type Options = {
   open: boolean;
   trendAnalysis: boolean;
   stdio: boolean;
+  fillCache: boolean;
 };
 
 export const defaultOptions: Options = {
@@ -18,4 +19,5 @@ export const defaultOptions: Options = {
   open: true,
   trendAnalysis: false,
   stdio: false,
+  fillCache: false,
 };

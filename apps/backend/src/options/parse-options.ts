@@ -20,6 +20,8 @@ export function parseOptions(args: string[]): Options {
         parsed.trendAnalysis = true;
       } else if (arg === '--mcp') {
         parsed.stdio = true;
+      } else if (arg === '--fill-cache') {
+        parsed.fillCache = true;
       } else if (!parsed.sheriffDump) {
         parsed.sheriffDump = arg;
       }
