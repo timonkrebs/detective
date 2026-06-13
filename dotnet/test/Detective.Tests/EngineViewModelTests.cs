@@ -64,6 +64,19 @@ public class EngineViewModelTests
     }
 
     [Fact]
+    public void Aggregated_hotspot_count_is_total_scored_files()
+    {
+        using var repo = BuildSampleRepo();
+        var engine = new DetectiveEngine(new AnalysisOptions { Path = repo.Path });
+
+        var result = engine.AggregatedHotspots(new HotspotCriteria { Metric = ComplexityMetric.McCabe });
+
+        Assert.NotEmpty(result.Aggregated);
+        foreach (var row in result.Aggregated)
+            Assert.Equal(row.CountOk + row.CountWarning + row.CountHotspot, row.Count);
+    }
+
+    [Fact]
     public async Task ViewModel_reactively_populates_and_recomputes()
     {
         using var repo = BuildSampleRepo();

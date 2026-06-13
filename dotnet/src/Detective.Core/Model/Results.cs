@@ -59,6 +59,7 @@ public sealed class AggregatedHotspot
 {
     public string Parent { get; set; } = string.Empty;
     public string Module { get; set; } = string.Empty;
+    /// <summary>Total scored files in the module (= Ok + Warning + Hotspot).</summary>
     public int Count { get; set; }
     public int CountWarning { get; set; }
     public int CountHotspot { get; set; }

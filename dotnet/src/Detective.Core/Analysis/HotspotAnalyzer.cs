@@ -74,7 +74,9 @@ public sealed class HotspotAnalyzer
             {
                 Parent = PathUtils.Dirname(display),
                 Module = display,
-                Count = countOk,
+                // Total scored files in the module — a distinct aggregate (not a
+                // duplicate of CountOk), so the sort below reflects module size.
+                Count = countOk + countWarning + countHotspot,
                 CountOk = countOk,
                 CountWarning = countWarning,
                 CountHotspot = countHotspot,
