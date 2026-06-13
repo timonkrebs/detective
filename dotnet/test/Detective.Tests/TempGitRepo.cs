@@ -32,12 +32,23 @@ public sealed class TempGitRepo : IDisposable
 
     public void Git(params string[] args)
     {
-        var psi = new ProcessStartInfo("git") { WorkingDirectory = Path, RedirectStandardError = true, RedirectStandardOutput = true };
+        var psi = new ProcessStartInfo("git")
+        {
+            WorkingDirectory = Path,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
         foreach (var a in args) psi.ArgumentList.Add(a);
         using var p = Process.Start(psi)!;
+        // Drain both streams asynchronously before waiting, so a large output cannot
+        // fill a redirected buffer and deadlock WaitForExit().
+        var stdout = p.StandardOutput.ReadToEndAsync();
+        var stderr = p.StandardError.ReadToEndAsync();
         p.WaitForExit();
         if (p.ExitCode != 0)
-            throw new InvalidOperationException($"git {string.Join(' ', args)} failed: {p.StandardError.ReadToEnd()}");
+            throw new InvalidOperationException(
+                $"git {string.Join(' ', args)} failed: {stderr.Result}{stdout.Result}");
     }
 
     public void Dispose()

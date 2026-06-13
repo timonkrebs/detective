@@ -145,10 +145,22 @@ public sealed class HotspotAnalyzer
     private int CalcComplexity(LogBodyEntry change, HotspotCriteria criteria)
     {
         var filePath = Path.Combine(_repoPath, change.Path.Replace('/', Path.DirectorySeparatorChar));
-        if (criteria.Metric == ComplexityMetric.McCabe && filePath.EndsWith(".cs") && File.Exists(filePath))
-            return CSharpComplexityAnalyzer.CyclomaticComplexity(File.ReadAllText(filePath));
-        if (criteria.Metric == ComplexityMetric.Length && File.Exists(filePath))
-            return CSharpComplexityAnalyzer.CountLines(File.ReadAllText(filePath));
-        return 1;
+        // Not in the working tree (e.g. since-deleted file) -> complexity unknown.
+        if (!File.Exists(filePath)) return -1;
+        try
+        {
+            if (criteria.Metric == ComplexityMetric.Length)
+                return CSharpComplexityAnalyzer.CountLines(File.ReadAllText(filePath));
+            if (filePath.EndsWith(".cs"))
+                return CSharpComplexityAnalyzer.CyclomaticComplexity(File.ReadAllText(filePath));
+            return 1; // McCabe is only meaningful for C#; treat others as neutral.
+        }
+        catch
+        {
+            // Unreadable/locked file or parse failure must not abort the whole analysis.
+            // The -1 sentinel yields score -1 in FindHotspotFiles, so it is excluded
+            // from any positive-threshold hotspot list rather than scored misleadingly.
+            return -1;
+        }
     }
 }

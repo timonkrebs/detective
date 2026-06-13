@@ -8,9 +8,17 @@ namespace Detective.Wpf;
 /// <summary>Colors a hotspot/complexity score green → orange → red by magnitude.</summary>
 public sealed class ScoreToBrushConverter : IValueConverter
 {
-    private static readonly SolidColorBrush Ok = new(Color.FromRgb(0x2E, 0x7D, 0x32));
-    private static readonly SolidColorBrush Warn = new(Color.FromRgb(0xF9, 0xA8, 0x25));
-    private static readonly SolidColorBrush Hot = new(Color.FromRgb(0xE5, 0x39, 0x35));
+    // Frozen so the shared brushes are immutable and cheap to use on the render thread.
+    private static readonly SolidColorBrush Ok = Frozen(Color.FromRgb(0x2E, 0x7D, 0x32));
+    private static readonly SolidColorBrush Warn = Frozen(Color.FromRgb(0xF9, 0xA8, 0x25));
+    private static readonly SolidColorBrush Hot = Frozen(Color.FromRgb(0xE5, 0x39, 0x35));
+
+    private static SolidColorBrush Frozen(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {

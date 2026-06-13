@@ -60,7 +60,10 @@ public static class GitLogParser
                 else if (line.Split('\t').Length < 3)
                 {
                     // A new commit header appeared without a blank separator (e.g. an
-                    // empty/merge commit). Treat it as the start of the next commit.
+                    // empty/merge commit). Finalize the current commit first so its file
+                    // changes are never attributed to the next header.
+                    callback(new LogEntry { Header = header, Body = body });
+                    body = new List<LogBodyEntry>();
                     count++;
                     if (limits.LimitCommits is int lc && count > lc) return;
                     state = BeginCommit(line);

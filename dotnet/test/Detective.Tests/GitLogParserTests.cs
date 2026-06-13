@@ -78,6 +78,26 @@ public class GitLogParserTests
     }
 
     [Fact]
+    public void Header_in_body_without_blank_separator_finalizes_previous_commit()
+    {
+        // commit A's numstat is directly followed by commit B's header (no blank line).
+        const string log =
+            "\"DevA <a@x.io>,2024-01-01T00:00:00+00:00\tHA,commit a\"\n" +
+            "1\t0\tsrc/a/FileA.cs\n" +
+            "\"DevB <b@x.io>,2024-01-02T00:00:00+00:00\tHB,commit b\"\n" +
+            "2\t0\tsrc/b/FileB.cs\n";
+
+        var entries = new List<LogEntry>();
+        GitLogParser.Parse(log, entries.Add);
+
+        Assert.Equal(2, entries.Count);
+        Assert.Equal("DevA", entries[0].Header.UserName);
+        Assert.Equal(new[] { "src/a/FileA.cs" }, entries[0].Body.Select(b => b.Path).ToArray());
+        Assert.Equal("DevB", entries[1].Header.UserName);
+        Assert.Equal(new[] { "src/b/FileB.cs" }, entries[1].Body.Select(b => b.Path).ToArray());
+    }
+
+    [Fact]
     public void Honors_commit_limit()
     {
         var entries = new List<LogEntry>();
