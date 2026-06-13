@@ -32,3 +32,20 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  dotnet_job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # Builds and tests the cross-platform projects (Core, ViewModels, Api, Cli,
+      # Tests). The WPF shell targets net8.0-windows and is built on Windows.
+      - name: Build and test (.NET)
+        run: bash dotnet/build.sh

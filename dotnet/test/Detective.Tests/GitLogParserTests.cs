@@ -57,6 +57,27 @@ public class GitLogParserTests
     }
 
     [Fact]
+    public void Log_exclusion_matches_header_only_not_paths()
+    {
+        // 'prettier' appears in a FILE PATH of commit 1 (must NOT drop it) and in
+        // the SUBJECT of commit 2 (must drop it).
+        const string log =
+            "\"Dev <d@x.io>,2024-01-01T00:00:00+00:00\tA1,normal change\"\n" +
+            "1\t0\tsrc/a/prettier.config.cs\n" +
+            "\n" +
+            "\"Dev <d@x.io>,2024-01-02T00:00:00+00:00\tA2,prettier formatting\"\n" +
+            "5\t0\tsrc/a/Other.cs\n";
+
+        var entries = new List<LogEntry>();
+        var options = new ParseOptions { Filter = new Filter { Logs = new() { "prettier" } } };
+        GitLogParser.Parse(log, entries.Add, options);
+
+        Assert.Single(entries);                                   // commit 2 skipped by subject
+        Assert.Equal(1, entries[0].Header.Date.Day);              // commit 1 survived
+        Assert.Equal("src/a/prettier.config.cs", entries[0].Body[0].Path); // path-level match did not drop it
+    }
+
+    [Fact]
     public void Honors_commit_limit()
     {
         var entries = new List<LogEntry>();

@@ -43,17 +43,11 @@ public static class GitLogParser
 
         foreach (var line in SplitLines(log))
         {
-            if (ContainsExcluded(line, logExcludes))
-            {
-                state = State.Skip;
-            }
-            else if (state == State.Header)
+            if (state == State.Header)
             {
                 count++;
                 if (limits.LimitCommits is int lc && count > lc) return;
-
-                header = ParseHeader(line);
-                state = header.Date < dateLimit ? State.Skip : State.Body;
+                state = BeginCommit(line);
             }
             else if (state == State.Body)
             {
@@ -65,8 +59,11 @@ public static class GitLogParser
                 }
                 else if (line.Split('\t').Length < 3)
                 {
-                    // No blank separator before the next commit (e.g. empty commit).
-                    header = ParseHeader(line);
+                    // A new commit header appeared without a blank separator (e.g. an
+                    // empty/merge commit). Treat it as the start of the next commit.
+                    count++;
+                    if (limits.LimitCommits is int lc && count > lc) return;
+                    state = BeginCommit(line);
                 }
                 else
                 {
@@ -86,6 +83,16 @@ public static class GitLogParser
 
         if (body.Count > 0)
             callback(new LogEntry { Header = header, Body = body });
+
+        // Decides the state after consuming a *header* line. The commit-message
+        // exclusion is applied here only — never to numstat/path lines — so an
+        // excluded substring in a file path can no longer drop a whole commit.
+        State BeginCommit(string headerLine)
+        {
+            if (ContainsExcluded(headerLine, logExcludes)) return State.Skip;
+            header = ParseHeader(headerLine);
+            return header.Date < dateLimit ? State.Skip : State.Body;
+        }
     }
 
     private static IEnumerable<string> SplitLines(string text)

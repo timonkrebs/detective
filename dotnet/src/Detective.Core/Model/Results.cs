@@ -87,6 +87,14 @@ public sealed class TeamAlignmentResult
     public List<string> Teams { get; set; } = new();
 }
 
+// ---- Module info -----------------------------------------------------------
+
+public sealed class ModuleInfo
+{
+    /// <summary>File count per scope (parallel to <c>Config.Scopes</c>).</summary>
+    public List<int> FileCount { get; set; } = new();
+}
+
 // ---- Code metrics (Roslyn x-ray) -------------------------------------------
 
 public sealed class CodeMetrics

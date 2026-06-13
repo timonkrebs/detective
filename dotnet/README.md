@@ -32,14 +32,16 @@ dotnet/
   src/
     Detective.Core/        net8.0          Analysis engine (git + Roslyn). No UI deps.
     Detective.ViewModels/  net8.0          Reactive store built on MemoizR.
+    Detective.Api/         net8.0          ASP.NET Core Web API + Angular host.
     Detective.Cli/         net8.0          Console runner (great for CI / headless).
     Detective.Wpf/         net8.0-windows  WPF/XAML shell (Windows-only build).
   test/
     Detective.Tests/       net8.0          xUnit tests for Core + ViewModels.
 ```
 
-`Core`, `ViewModels`, `Cli` and the tests are plain `net8.0` and build/run on any
-platform. Only `Detective.Wpf` is Windows-only.
+`Core`, `ViewModels`, `Api`, `Cli` and the tests are plain `net8.0` and build/run
+on any platform. Only `Detective.Wpf` is Windows-only. The same `Detective.Core`
+engine powers all three front ends (CLI, WPF, Web/Angular) — no duplicated logic.
 
 ## How MemoizR powers the UI
 
@@ -117,6 +119,35 @@ dotnet run --project src\Detective.Wpf -- C:\path\to\repo
 Enter a repository path, click **Analyze**, and explore the tabs (Hotspots,
 Coupling, Change Coupling, Team Alignment, Code x-ray). The min-score slider and
 the metric/by-user toggles update results live through MemoizR.
+
+### Web API + Angular client
+
+`Detective.Api` exposes the engine over HTTP (the same `/api/*` contract the
+existing Angular front end already speaks) and listens on **:3334** — the port
+`apps/frontend/proxy.conf.json` already targets, so the Angular app works
+unchanged.
+
+```bash
+# API only (analyzes the given repo); Swagger UI at http://localhost:3334/swagger
+DETECTIVE_REPO=/path/to/repo dotnet run --project dotnet/src/Detective.Api
+
+# API + Angular dev server together (proxy forwards /api -> :3334):
+./dotnet/dev.sh
+```
+
+Endpoints: `/api/coupling`, `/api/change-coupling`, `/api/hotspots(+/aggregated)`,
+`/api/team-alignment`, `/api/modules`, `/api/config` (GET/POST), `/api/status`,
+`/api/cache/log(+/update)`, `/api/code`. Query params match the original backend
+(`limitCommits`, `limitMonths`, `minScore`, `metric`, `module`, `byUser`); the
+repo can be overridden per request with `?path=`.
+
+The result DTOs serialize to the same camelCase shapes as the Angular models
+(`CouplingResult`, `HotspotResult`, `TeamAlignmentResult`, …), so no frontend
+changes are required.
+
+**Production** is a single artifact: build the Angular app into
+`Detective.Api/wwwroot`, then `dotnet publish` — the API serves both `/api/*` and
+the SPA (`UseStaticFiles` + `MapFallbackToFile`).
 
 ## Building & testing
 

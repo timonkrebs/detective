@@ -8,6 +8,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
 projects=(
   src/Detective.Core
   src/Detective.ViewModels
+  src/Detective.Api
   src/Detective.Cli
   test/Detective.Tests
 )

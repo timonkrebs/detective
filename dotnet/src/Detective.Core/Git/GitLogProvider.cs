@@ -35,6 +35,17 @@ public sealed class GitLogProvider
         return outp.Trim();
     }
 
+    public string CommitCount()
+    {
+        var (code, outp, err) = ProcessRunner.Run("git", new[] { "rev-list", "--count", "HEAD" }, _repoPath);
+        if (code != 0) throw new InvalidOperationException($"git rev-list failed: {err}");
+        return outp.Trim();
+    }
+
+    /// <summary>True when the cached log is missing or the tree changed since it was written.</summary>
+    public bool IsStale() =>
+        !File.Exists(HashPath) || File.ReadAllText(HashPath).Trim() != TreeHash();
+
     private string DetectivePath => Path.Combine(_repoPath, DetectiveDir);
     private string LogPath => Path.Combine(DetectivePath, LogFile);
     private string HashPath => Path.Combine(DetectivePath, HashFile);

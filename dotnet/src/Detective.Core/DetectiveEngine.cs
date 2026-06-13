@@ -32,6 +32,22 @@ public sealed class DetectiveEngine
     public string GetLog(bool forceRefresh = false) => _git.GetLog(forceRefresh);
     public void FillCache() => _git.FillCache();
 
+    public string CommitCount() => _git.CommitCount();
+    public bool IsStale() => _git.IsStale();
+
+    /// <summary>File count per scope — the .NET equivalent of <c>calcModuleInfo</c>.</summary>
+    public ModuleInfo ModuleInfo()
+    {
+        var deps = Deps();
+        var scopes = Config.Scopes;
+        var fileCount = new int[scopes.Count];
+        foreach (var dep in deps.Keys)
+            for (var i = 0; i < scopes.Count; i++)
+                if (dep.StartsWith(scopes[i], StringComparison.Ordinal))
+                    fileCount[i]++;
+        return new ModuleInfo { FileCount = fileCount.ToList() };
+    }
+
     public CouplingResult Coupling() =>
         CouplingAnalyzer.Calc(Deps(), Config);
 
