@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    WPF front end. This project targets net8.0-windows and therefore only builds
+    on Windows. The analysis engine (Detective.Core) and the MemoizR-based
+    reactive store (Detective.ViewModels) are plain net8.0 and build/run/test on
+    any platform; this project is the thin XAML shell on top of them.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Detective.Wpf</RootNamespace>
+    <AssemblyName>Detective</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Allows the (Windows-only) project to cross-compile on Linux CI; running still requires Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Detective.ViewModels\Detective.ViewModels.csproj" />
+  </ItemGroup>
+
+</Project>
