@@ -1,0 +1,107 @@
+using Detective.Core.Git;
+using Detective.Core.Model;
+using Xunit;
+
+namespace Detective.Tests;
+
+public class GitLogParserTests
+{
+    // Mirrors the cached format produced by GitLogProvider:
+    //   "%an <%ae>,%aI%x09%H,%s"  (with literal surrounding quotes)
+    private const string Log =
+        "\"Jane Doe <jane@x.io>,2024-03-01T12:00:00+00:00\tAAA,feat: a\"\n" +
+        "10\t2\tsrc/a/File.cs\n" +
+        "3\t0\tsrc/b/Other.cs\n" +
+        "\n" +
+        "\"John <john@x.io>,2024-03-02T12:00:00+00:00\tBBB,refactor\"\n" +
+        "2\t0\tsrc/a/{Old => New}/File.cs\n";
+
+    [Fact]
+    public void Parses_headers_bodies_and_dates()
+    {
+        var entries = new List<LogEntry>();
+        GitLogParser.Parse(Log, entries.Add);
+
+        Assert.Equal(2, entries.Count);
+
+        var first = entries[0];
+        Assert.Equal("Jane Doe", first.Header.UserName);
+        Assert.Equal("jane@x.io", first.Header.Email);
+        Assert.Equal(2024, first.Header.Date.Year);
+        Assert.Equal(2, first.Body.Count);
+        Assert.Equal("src/a/File.cs", first.Body[0].Path);
+        Assert.Equal(10, first.Body[0].LinesAdded);
+        Assert.Equal(2, first.Body[0].LinesRemoved);
+    }
+
+    [Fact]
+    public void Resolves_rename_syntax()
+    {
+        var entries = new List<LogEntry>();
+        GitLogParser.Parse(Log, entries.Add);
+        Assert.Equal("src/a/New/File.cs", entries[1].Body[0].Path);
+    }
+
+    [Fact]
+    public void Applies_file_filter_with_negation()
+    {
+        var entries = new List<LogEntry>();
+        var options = new ParseOptions
+        {
+            Filter = new Filter { Files = new() { "**/*.cs", "!**/b/**" } }
+        };
+        GitLogParser.Parse(Log, entries.Add, options);
+
+        Assert.Single(entries[0].Body);
+        Assert.Equal("src/a/File.cs", entries[0].Body[0].Path);
+    }
+
+    [Fact]
+    public void Log_exclusion_matches_header_only_not_paths()
+    {
+        // 'prettier' appears in a FILE PATH of commit 1 (must NOT drop it) and in
+        // the SUBJECT of commit 2 (must drop it).
+        const string log =
+            "\"Dev <d@x.io>,2024-01-01T00:00:00+00:00\tA1,normal change\"\n" +
+            "1\t0\tsrc/a/prettier.config.cs\n" +
+            "\n" +
+            "\"Dev <d@x.io>,2024-01-02T00:00:00+00:00\tA2,prettier formatting\"\n" +
+            "5\t0\tsrc/a/Other.cs\n";
+
+        var entries = new List<LogEntry>();
+        var options = new ParseOptions { Filter = new Filter { Logs = new() { "prettier" } } };
+        GitLogParser.Parse(log, entries.Add, options);
+
+        Assert.Single(entries);                                   // commit 2 skipped by subject
+        Assert.Equal(1, entries[0].Header.Date.Day);              // commit 1 survived
+        Assert.Equal("src/a/prettier.config.cs", entries[0].Body[0].Path); // path-level match did not drop it
+    }
+
+    [Fact]
+    public void Header_in_body_without_blank_separator_finalizes_previous_commit()
+    {
+        // commit A's numstat is directly followed by commit B's header (no blank line).
+        const string log =
+            "\"DevA <a@x.io>,2024-01-01T00:00:00+00:00\tHA,commit a\"\n" +
+            "1\t0\tsrc/a/FileA.cs\n" +
+            "\"DevB <b@x.io>,2024-01-02T00:00:00+00:00\tHB,commit b\"\n" +
+            "2\t0\tsrc/b/FileB.cs\n";
+
+        var entries = new List<LogEntry>();
+        GitLogParser.Parse(log, entries.Add);
+
+        Assert.Equal(2, entries.Count);
+        Assert.Equal("DevA", entries[0].Header.UserName);
+        Assert.Equal(new[] { "src/a/FileA.cs" }, entries[0].Body.Select(b => b.Path).ToArray());
+        Assert.Equal("DevB", entries[1].Header.UserName);
+        Assert.Equal(new[] { "src/b/FileB.cs" }, entries[1].Body.Select(b => b.Path).ToArray());
+    }
+
+    [Fact]
+    public void Honors_commit_limit()
+    {
+        var entries = new List<LogEntry>();
+        GitLogParser.Parse(Log, entries.Add, new ParseOptions { Limits = new Limits { LimitCommits = 1 } });
+        Assert.Single(entries);
+    }
+}

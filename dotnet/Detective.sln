@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{39D95E1F-96EF-485D-996E-030050A0A734}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Detective.Core", "src\Detective.Core\Detective.Core.csproj", "{C4358107-F26A-459C-A8FF-3BC3B2855302}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Detective.Cli", "src\Detective.Cli\Detective.Cli.csproj", "{479CE8BB-5143-40A4-8516-59737C97FCE7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Detective.ViewModels", "src\Detective.ViewModels\Detective.ViewModels.csproj", "{17C6DBC8-5ECB-455A-94A7-EB78E0E1AD18}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Detective.Wpf", "src\Detective.Wpf\Detective.Wpf.csproj", "{B1F5E3A2-1C4D-4E6F-9A8B-0D2C3E4F5A6B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{EEF4C409-108F-41A0-9C94-46DF53DDB0D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Detective.Tests", "test\Detective.Tests\Detective.Tests.csproj", "{93126243-DD78-47C9-9794-86E7D3918789}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Detective.Api", "src\Detective.Api\Detective.Api.csproj", "{6A499D48-AE09-48C1-984B-441809C38A3C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C4358107-F26A-459C-A8FF-3BC3B2855302}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4358107-F26A-459C-A8FF-3BC3B2855302}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4358107-F26A-459C-A8FF-3BC3B2855302}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4358107-F26A-459C-A8FF-3BC3B2855302}.Release|Any CPU.Build.0 = Release|Any CPU
+		{479CE8BB-5143-40A4-8516-59737C97FCE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{479CE8BB-5143-40A4-8516-59737C97FCE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{479CE8BB-5143-40A4-8516-59737C97FCE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{479CE8BB-5143-40A4-8516-59737C97FCE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17C6DBC8-5ECB-455A-94A7-EB78E0E1AD18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17C6DBC8-5ECB-455A-94A7-EB78E0E1AD18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17C6DBC8-5ECB-455A-94A7-EB78E0E1AD18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17C6DBC8-5ECB-455A-94A7-EB78E0E1AD18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93126243-DD78-47C9-9794-86E7D3918789}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93126243-DD78-47C9-9794-86E7D3918789}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93126243-DD78-47C9-9794-86E7D3918789}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93126243-DD78-47C9-9794-86E7D3918789}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1F5E3A2-1C4D-4E6F-9A8B-0D2C3E4F5A6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1F5E3A2-1C4D-4E6F-9A8B-0D2C3E4F5A6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1F5E3A2-1C4D-4E6F-9A8B-0D2C3E4F5A6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1F5E3A2-1C4D-4E6F-9A8B-0D2C3E4F5A6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A499D48-AE09-48C1-984B-441809C38A3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A499D48-AE09-48C1-984B-441809C38A3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A499D48-AE09-48C1-984B-441809C38A3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A499D48-AE09-48C1-984B-441809C38A3C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C4358107-F26A-459C-A8FF-3BC3B2855302} = {39D95E1F-96EF-485D-996E-030050A0A734}
+		{479CE8BB-5143-40A4-8516-59737C97FCE7} = {39D95E1F-96EF-485D-996E-030050A0A734}
+		{17C6DBC8-5ECB-455A-94A7-EB78E0E1AD18} = {39D95E1F-96EF-485D-996E-030050A0A734}
+		{B1F5E3A2-1C4D-4E6F-9A8B-0D2C3E4F5A6B} = {39D95E1F-96EF-485D-996E-030050A0A734}
+		{93126243-DD78-47C9-9794-86E7D3918789} = {EEF4C409-108F-41A0-9C94-46DF53DDB0D3}
+		{6A499D48-AE09-48C1-984B-441809C38A3C} = {39D95E1F-96EF-485D-996E-030050A0A734}
+	EndGlobalSection
+EndGlobal
